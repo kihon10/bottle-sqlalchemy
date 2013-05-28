@@ -59,7 +59,7 @@ import inspect
 
 import bottle
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import ScopedSession, sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 # PluginError is defined to bottle >= 0.10
 if not hasattr(bottle, 'PluginError'):
@@ -133,8 +133,9 @@ class SQLAlchemyPlugin(object):
             self.metadata.create_all(self.engine)
 
         def wrapper(*args, **kwargs):
-            kwargs[keyword] = session = self.create_session(bind=self.engine) \
-                if not (type(self.create_session) is ScopedSession) else self.create_session() 
+            kwargs[keyword] = session = self.create_session() \
+                if (type(self.create_session) is scoped_session) \
+                    else self.create_session(bind=self.engine)
             try:
                 rv = callback(*args, **kwargs)
                 if commit:
@@ -147,7 +148,7 @@ class SQLAlchemyPlugin(object):
                     session.commit()
                 raise
             finally:
-                if type(self.create_session) is ScopedSession:
+                if type(self.create_session) is scoped_session:
                     self.create_session.remove()
                 else:
                     session.close()
