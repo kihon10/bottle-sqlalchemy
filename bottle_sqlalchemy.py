@@ -133,7 +133,8 @@ class SQLAlchemyPlugin(object):
             self.metadata.create_all(self.engine)
 
         def wrapper(*args, **kwargs):
-            kwargs[keyword] = session = self.create_session(bind=self.engine)
+            kwargs[keyword] = session = self.create_session(bind=self.engine) \
+                if not (type(self.create_session) is ScopedSession) else self.create_session() 
             try:
                 rv = callback(*args, **kwargs)
                 if commit:
