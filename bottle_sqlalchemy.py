@@ -148,10 +148,10 @@ class SQLAlchemyPlugin(object):
                     session.commit()
                 raise
             finally:
-                if type(self.create_session) is scoped_session:
-                    self.create_session.remove()
-                else:
-                    session.close()
+                # if type(self.create_session) is scoped_session:
+                #     self.create_session.remove()
+                # else:
+                session.close()
             return rv
 
         return wrapper
